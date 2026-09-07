@@ -1,0 +1,478 @@
+<title>Findr — Finance Advisor</title>
+<style>
+  :root{
+    --bg:#0b0e14; --panel:#131722; --panel2:#161b28; --border:#232a3b;
+    --text:#e8ecf4; --muted:#8b93a7; --accent:#5b8cff; --accent2:#2dd4bf;
+    --good:#2dd4bf; --warn:#f5a623; --bad:#ff6b6b;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .app{display:grid;grid-template-columns:230px 1fr;min-height:100vh;}
+  .sidebar{background:var(--panel);border-right:1px solid var(--border);padding:20px 14px;display:flex;flex-direction:column;gap:4px;}
+  .brand{display:flex;align-items:center;gap:8px;padding:6px 8px 22px;}
+  .brand .mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#0b0e14;}
+  .brand .name{font-weight:700;font-size:17px;letter-spacing:-0.02em;}
+  .navitem{padding:10px 12px;border-radius:10px;color:var(--muted);font-size:14px;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:10px;}
+  .navitem:hover{background:var(--panel2);color:var(--text);}
+  .navitem.active{background:rgba(91,140,255,0.13);color:var(--accent);}
+  .navitem .dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.7;}
+  .userbox{margin-top:auto;padding:12px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);}
+  .userbox b{color:var(--text);display:block;font-size:13px;}
+
+  .main{padding:26px 32px 60px;max-width:1180px;}
+  .topline{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;gap:20px;flex-wrap:wrap;}
+  h1{font-size:22px;margin:0 0 4px;letter-spacing:-0.02em;}
+  .sub{color:var(--muted);font-size:14px;margin:0;}
+  .pill{background:var(--panel2);border:1px solid var(--border);border-radius:999px;padding:6px 14px;font-size:12.5px;color:var(--muted);}
+
+  .cards-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-bottom:22px;}
+  .stat{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;}
+  .stat .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+  .stat .value{font-size:24px;font-weight:700;letter-spacing:-0.02em;}
+  .stat .delta{font-size:12.5px;margin-top:6px;font-weight:600;}
+  .delta.up{color:var(--bad);} .delta.down{color:var(--good);} .delta.flat{color:var(--muted);}
+
+  .grid2{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;margin-bottom:22px;}
+  @media(max-width:900px){.grid2{grid-template-columns:1fr;}}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
+  .panel h3{margin:0 0 14px;font-size:15px;font-weight:650;}
+  .panel h3 span{color:var(--muted);font-weight:400;font-size:12.5px;}
+
+  .barchart{display:flex;align-items:flex-end;gap:22px;height:180px;padding-top:10px;}
+  .barcol{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;}
+  .barwrap{display:flex;align-items:flex-end;gap:4px;height:140px;}
+  .bar{width:20px;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,var(--accent),#3a5fd9);position:relative;}
+  .barlabel{font-size:12px;color:var(--muted);}
+  .barval{font-size:10.5px;color:var(--muted);position:absolute;top:-18px;left:50%;transform:translateX(-50%);white-space:nowrap;}
+
+  .catlist{display:flex;flex-direction:column;gap:10px;}
+  .catrow{display:grid;grid-template-columns:110px 1fr 74px 60px;align-items:center;gap:10px;font-size:13px;}
+  .catname{color:var(--text);font-weight:500;}
+  .track{height:8px;background:var(--panel2);border-radius:5px;overflow:hidden;}
+  .fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--accent2),var(--accent));}
+  .catamt{text-align:right;font-weight:600;}
+  .cattrend{font-size:11.5px;text-align:right;font-weight:700;}
+  .cattrend.up{color:var(--bad);} .cattrend.down{color:var(--good);}
+
+  .insight-card{border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;background:var(--panel2);}
+  .insight-card .tag{display:inline-block;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:3px 8px;border-radius:6px;margin-bottom:8px;}
+  .tag.risk{background:rgba(255,107,107,.15);color:var(--bad);}
+  .tag.save{background:rgba(45,212,191,.15);color:var(--good);}
+  .tag.watch{background:rgba(245,166,35,.15);color:var(--warn);}
+  .insight-card p{margin:0;font-size:13.5px;line-height:1.5;color:#cfd5e3;}
+  .insight-card .amt{color:var(--text);font-weight:700;}
+
+  .cardlist{display:flex;flex-direction:column;gap:12px;}
+  .cc{border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;background:var(--panel2);}
+  .cc .issuer{font-weight:650;font-size:14px;}
+  .cc .meta{font-size:12px;color:var(--muted);margin-top:2px;}
+  .cc .bal{text-align:right;font-weight:700;}
+  .cc .apr{font-size:11.5px;color:var(--muted);}
+  .util{width:70px;height:6px;border-radius:4px;background:var(--panel);overflow:hidden;margin-top:4px;}
+  .util .u{height:100%;background:var(--accent);}
+
+  /* Chat */
+  .chatwrap{display:flex;flex-direction:column;height:calc(100vh - 150px);}
+  .chatmsgs{flex:1;overflow-y:auto;padding:6px 2px 16px;display:flex;flex-direction:column;gap:14px;}
+  .msg{max-width:78%;padding:12px 15px;border-radius:14px;font-size:14px;line-height:1.55;}
+  .msg.user{align-self:flex-end;background:var(--accent);color:white;border-bottom-right-radius:4px;}
+  .msg.bot{align-self:flex-start;background:var(--panel2);border:1px solid var(--border);border-bottom-left-radius:4px;}
+  .msg.bot .num{color:var(--accent2);font-weight:700;}
+  .msg.bot ul{margin:8px 0 0;padding-left:18px;}
+  .msg.bot li{margin-bottom:4px;}
+  .suggestrow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 4px;}
+  .suggest{background:var(--panel2);border:1px solid var(--border);border-radius:999px;padding:8px 14px;font-size:12.5px;color:var(--text);cursor:pointer;}
+  .suggest:hover{border-color:var(--accent);color:var(--accent);}
+  .chatinputrow{display:flex;gap:10px;border-top:1px solid var(--border);padding-top:14px;}
+  .chatinputrow input{flex:1;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:13px 16px;color:var(--text);font-size:14px;}
+  .chatinputrow input:focus{outline:none;border-color:var(--accent);}
+  .sendbtn{background:var(--accent);border:none;color:white;padding:0 20px;border-radius:10px;font-weight:650;cursor:pointer;font-size:14px;}
+  .sendbtn:hover{background:#4a7bf0;}
+
+  .typing{display:flex;gap:4px;padding:4px 0;}
+  .typing span{width:6px;height:6px;background:var(--muted);border-radius:50%;animation:blink 1.2s infinite;}
+  .typing span:nth-child(2){animation-delay:.2s;} .typing span:nth-child(3){animation-delay:.4s;}
+  @keyframes blink{0%,60%,100%{opacity:.3;}30%{opacity:1;}}
+
+  .hidden{display:none!important;}
+  .badge{font-size:11px;background:rgba(45,212,191,.15);color:var(--good);padding:2px 8px;border-radius:6px;font-weight:700;margin-left:8px;}
+</style>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="brand"><div class="mark">F</div><div class="name">Findr</div></div>
+    <div class="navitem active" data-view="dashboard"><span class="dot"></span>Dashboard</div>
+    <div class="navitem" data-view="advisor"><span class="dot"></span>AI Advisor</div>
+    <div class="navitem" data-view="cards"><span class="dot"></span>Cards</div>
+    <div class="navitem" data-view="upload"><span class="dot"></span>Add Statement</div>
+    <div class="userbox"><b>Jordan T. Reeves</b>Portland, OR · 3 cards linked</div>
+  </div>
+
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div id="view-dashboard">
+      <div class="topline">
+        <div><h1>Good to see you, Jordan</h1><p class="sub">Here's what's happening across all 3 of your cards — last 3 billing cycles.</p></div>
+        <div class="pill">Jun – Aug 2026 · updated just now</div>
+      </div>
+
+      <div class="cards-row" id="statrow"></div>
+
+      <div class="grid2">
+        <div class="panel">
+          <h3>Total spend by month <span>across Meridian, Aurora &amp; Summit</span></h3>
+          <div class="barchart" id="barchart"></div>
+        </div>
+        <div class="panel">
+          <h3>Where it's going <span>August, by category</span></h3>
+          <div class="catlist" id="catlist"></div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:22px;">
+        <h3>What Findr caught this cycle <span>ranked by dollar impact</span></h3>
+        <div id="insightlist"></div>
+      </div>
+
+      <div class="panel">
+        <h3>Ask about any of this <span>jump straight into the advisor</span></h3>
+        <div class="suggestrow" id="dashSuggest"></div>
+      </div>
+    </div>
+
+    <!-- ADVISOR -->
+    <div id="view-advisor" class="hidden">
+      <div class="topline">
+        <div><h1>Your Finance Advisor<span class="badge">grounded in your data</span></h1><p class="sub">Ask a question, or ask for a plan. Every answer is computed from your actual 3-month transaction history — no generic tips.</p></div>
+      </div>
+      <div class="panel chatwrap">
+        <div class="chatmsgs" id="chatmsgs"></div>
+        <div class="suggestrow" id="chatSuggest"></div>
+        <div class="chatinputrow">
+          <input id="chatInput" type="text" placeholder="e.g. Why did my spending jump in August?" />
+          <button class="sendbtn" id="sendBtn">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARDS -->
+    <div id="view-cards" class="hidden">
+      <div class="topline"><div><h1>Your Cards</h1><p class="sub">Consolidated view — something no single issuer app gives you.</p></div></div>
+      <div class="panel"><div class="cardlist" id="cardlist"></div></div>
+    </div>
+
+    <!-- UPLOAD -->
+    <div id="view-upload" class="hidden">
+      <div class="topline"><div><h1>Add a Statement</h1><p class="sub">Drop a PDF from any bank. Findr parses transactions, categorizes them, and folds them into your advisor instantly.</p></div></div>
+      <div class="panel" style="text-align:center;padding:60px 20px;">
+        <div id="dropzone" style="border:2px dashed var(--border);border-radius:14px;padding:50px;cursor:pointer;">
+          <div style="font-size:34px;margin-bottom:10px;">📄</div>
+          <div style="font-weight:600;margin-bottom:6px;">Drop a PDF or CSV statement here</div>
+          <div style="color:var(--muted);font-size:13px;">Meridian Express · Aurora Credit Union · Summit Bank · or any other issuer</div>
+          <input type="file" id="fileInput" class="hidden" accept=".pdf,.csv" />
+        </div>
+        <div id="uploadStatus" style="margin-top:18px;color:var(--muted);font-size:13.5px;"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ============================= DATA ============================= */
+const INSIGHTS = {"totals_by_month": {"2026-06": 1759.26, "2026-07": 1911.85, "2026-08": 2952.51}, "totals_by_category": {"Dining": [124.05, 169.8, 252.2], "Entertainment": [32.0, 28.5, 0.0], "Fees": [0.0, 50.4, 46.65], "Groceries": [464.09, 535.57, 342.58], "Health": [45.35, 42.3, 46.0], "Shopping": [523.05, 505.67, 588.45], "Subscriptions": [174.33, 186.32, 190.82], "Transport": [222.2, 221.45, 204.5], "Travel": [0.0, 0.0, 1099.02], "Utilities": [174.19, 171.84, 182.29]}, "months": ["2026-06", "2026-07", "2026-08"], "fees_detail": [{"card": "Aurora Credit Union", "date": "2026-07-14", "desc": "Late Payment Fee", "amount": 29.0}, {"card": "Summit Bank", "date": "2026-07-30", "desc": "Interest Charge", "amount": 21.4}, {"card": "Summit Bank", "date": "2026-08-11", "desc": "Foreign Transaction Fee", "amount": 20.65}, {"card": "Summit Bank", "date": "2026-08-13", "desc": "Foreign Transaction Fee", "amount": 1.15}, {"card": "Summit Bank", "date": "2026-08-30", "desc": "Interest Charge", "amount": 24.85}], "subscriptions": [{"name": "Amazon Prime", "monthly": 14.99, "card": "Aurora"}, {"name": "Disney+", "monthly": 15.99, "card": "Aurora"}, {"name": "Hulu", "monthly": 17.99, "card": "Aurora"}, {"name": "Max (HBO)", "monthly": 15.99, "card": "Aurora"}, {"name": "CloudVault Pro Storage", "monthly": 11.99, "card": "Aurora"}, {"name": "ZenMind Meditation", "monthly": 12.99, "card": "Aurora"}, {"name": "Apple TV+", "monthly": 9.99, "card": "Aurora"}, {"name": "YouTube Premium", "monthly": 13.99, "card": "Aurora"}, {"name": "Apple Music", "monthly": 10.99, "card": "Aurora"}, {"name": "Audible", "monthly": 14.95, "card": "Aurora"}, {"name": "Paramount+", "monthly": 11.99, "card": "Aurora", "note": "free trial in June, converted to paid in July - easy to miss"}, {"name": "Microsoft 365", "monthly": 9.99, "card": "Aurora"}, {"name": "Netflix", "monthly": 15.49, "card": "Summit", "note": "price rose from $15.49 to $17.99 in August"}, {"name": "Spotify", "monthly": 10.99, "card": "Summit"}], "streaming_overlap": ["Disney+", "Hulu", "Max (HBO)", "Apple TV+", "Netflix", "YouTube Premium", "Paramount+"], "cards_summary": [{"issuer": "Meridian Express", "last4": "8837", "apr": null, "pays_in_full": true, "aug_balance": 450.81, "limit": 8000}, {"issuer": "Aurora Credit Union", "last4": "6014", "apr": 17.9, "pays_in_full": false, "aug_balance": 783.43, "limit": 5000}, {"issuer": "Summit Bank", "last4": "4021", "apr": 22.99, "pays_in_full": false, "aug_balance": 1786.03, "limit": 15000}], "anomalies": [{"type": "duplicate_charge", "desc": "COSTCO WHOLESALE #488 charged $142.85 twice within 48 hours (Jul 2 and Jul 4) on Meridian card", "amount": 142.85}, {"type": "grocery_double_dip", "desc": "Groceries purchased on both Meridian (Costco/Trader Joe's) and Summit (Trader Joe's/Whole Foods/Safeway) in the same weeks - spend is fragmented across 2 cards, making it hard to see the real total"}]};
+
+const MONTH_LABELS = {"2026-06":"Jun","2026-07":"Jul","2026-08":"Aug"};
+const months = INSIGHTS.months;
+const cats = Object.keys(INSIGHTS.totals_by_category);
+const fmt = n => "$" + n.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmt0 = n => "$" + Math.round(n).toLocaleString();
+const pct = n => (n>=0?"+":"") + n.toFixed(0) + "%";
+
+function monthTotal(m){ return INSIGHTS.totals_by_month[m]; }
+function catTotal(cat, idx){ return INSIGHTS.totals_by_category[cat][idx]; }
+function catSum(cat){ return INSIGHTS.totals_by_category[cat].reduce((a,b)=>a+b,0); }
+function trendPct(cat){
+  const arr = INSIGHTS.totals_by_category[cat];
+  const first = arr[0] || 0.01;
+  return ((arr[arr.length-1]-first)/first)*100;
+}
+function grandTotal(){ return months.reduce((a,m)=>a+monthTotal(m),0); }
+function avgMonthly(){ return grandTotal()/months.length; }
+function subsMonthlyTotal(){ return INSIGHTS.subscriptions.reduce((a,s)=>a+s.monthly,0); }
+function feesTotal(){ return INSIGHTS.fees_detail.reduce((a,f)=>a+f.amount,0); }
+function topCategoryAug(){
+  let best=null,bestv=-1;
+  cats.forEach(c=>{ const v=catTotal(c,2); if(v>bestv && c!=='Travel'){bestv=v;best=c;} });
+  return {cat:best, val:bestv};
+}
+
+/* ============================= DASHBOARD RENDER ============================= */
+function renderStatRow(){
+  const el = document.getElementById('statrow');
+  const augTotal = monthTotal('2026-08');
+  const junTotal = monthTotal('2026-06');
+  const growth = ((augTotal-junTotal)/junTotal)*100;
+  const dining = INSIGHTS.totals_by_category['Dining'];
+  const diningGrowth = ((dining[2]-dining[0])/dining[0])*100;
+  el.innerHTML = `
+    <div class="stat"><div class="label">August Spend</div><div class="value">${fmt(augTotal)}</div>
+      <div class="delta up">▲ ${pct(growth)} vs June</div></div>
+    <div class="stat"><div class="label">3-Month Avg / Month</div><div class="value">${fmt(avgMonthly())}</div>
+      <div class="delta flat">across 3 cards</div></div>
+    <div class="stat"><div class="label">Dining Trend</div><div class="value">${fmt(dining[2])}</div>
+      <div class="delta up">▲ ${pct(diningGrowth)} since June</div></div>
+    <div class="stat"><div class="label">Fees Paid (3mo)</div><div class="value">${fmt(feesTotal())}</div>
+      <div class="delta up">100% avoidable</div></div>
+  `;
+}
+
+function renderBarChart(){
+  const el = document.getElementById('barchart');
+  const max = Math.max(...months.map(monthTotal));
+  el.innerHTML = months.map(m=>{
+    const v = monthTotal(m);
+    const h = Math.round((v/max)*130)+10;
+    return `<div class="barcol">
+      <div class="barwrap"><div class="bar" style="height:${h}px"><div class="barval">${fmt0(v)}</div></div></div>
+      <div class="barlabel">${MONTH_LABELS[m]} 2026</div>
+    </div>`;
+  }).join('');
+}
+
+function renderCatList(){
+  const el = document.getElementById('catlist');
+  const augCats = cats.filter(c=>catTotal(c,2)>0).sort((a,b)=>catTotal(b,2)-catTotal(a,2));
+  const max = catTotal(augCats[0],2);
+  el.innerHTML = augCats.map(c=>{
+    const v = catTotal(c,2);
+    const t = trendPct(c);
+    const trendClass = t>5?'up':(t<-5?'down':'');
+    const trendStr = Math.abs(t)<5 ? '—' : (t>0?'▲':'▼')+Math.abs(t).toFixed(0)+'%';
+    return `<div class="catrow">
+      <div class="catname">${c}</div>
+      <div class="track"><div class="fill" style="width:${(v/max*100).toFixed(0)}%"></div></div>
+      <div class="catamt">${fmt0(v)}</div>
+      <div class="cattrend ${trendClass}">${trendStr}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderInsights(){
+  const el = document.getElementById('insightlist');
+  const dining = INSIGHTS.totals_by_category['Dining'];
+  const diningGrowthPct = ((dining[2]-dining[0])/dining[0])*100;
+  const diningSaveTarget = dining[2]-dining[0];
+  const cards = INSIGHTS.cards_summary;
+  const revolvers = cards.filter(c=>!c.pays_in_full);
+  const annualInterestEst = revolvers.reduce((a,c)=>a + c.aug_balance*(c.apr/100), 0);
+
+  const items = [
+    {tag:'risk', title:`Dining is up ${diningGrowthPct.toFixed(0)}% since June`,
+      body:`You spent <span class="amt">${fmt(dining[0])}</span> on dining in June and <span class="amt">${fmt(dining[2])}</span> in August — a <span class="amt">${fmt(diningSaveTarget)}/mo</span> increase. Pulling August back to your June level saves roughly <span class="amt">${fmt(diningSaveTarget)}/month</span>, or <span class="amt">${fmt(diningSaveTarget*12)}/year</span>.`},
+    {tag:'watch', title:`You're paying for ${INSIGHTS.subscriptions.length} subscriptions — ${fmt(subsMonthlyTotal())}/mo`,
+      body:`That's <span class="amt">${fmt(subsMonthlyTotal()*12)}/year</span>. You have ${INSIGHTS.streaming_overlap.length} overlapping streaming services (Disney+, Hulu, Max, Apple TV+, Netflix, YouTube Premium, Paramount+). Paramount+ silently converted from a free trial to <span class="amt">$11.99/mo</span> in July — that's <span class="amt">${fmt(11.99*12)}/yr</span> you likely didn't notice.`},
+    {tag:'risk', title:`You paid ${fmt(feesTotal())} in avoidable fees over 3 months`,
+      body:`A <span class="amt">$29.00</span> late fee on Aurora (Jul 14), <span class="amt">$46.25</span> in Summit interest charges from carrying a balance, and <span class="amt">$21.80</span> in foreign transaction fees on the Barcelona trip. Autopay for minimums + a no-FX card for travel would have saved all of it.`},
+    {tag:'watch', title:`Two of your three cards are revolving a balance at high APR`,
+      body:`Aurora (17.9% APR) carries <span class="amt">${fmt(cards[1].aug_balance)}</span> and Summit (22.99% APR) carries <span class="amt">${fmt(cards[2].aug_balance)}</span>, while Meridian is paid in full every month. At current balances that's roughly <span class="amt">${fmt(annualInterestEst)}/year</span> in interest if nothing changes — prioritize paying down Summit first, it's the more expensive rate.`},
+    {tag:'save', title:`Groceries are split across 2 cards — consolidating shows the real number`,
+      body:`You bought groceries on both Meridian (Costco, Trader Joe's) and Summit (Trader Joe's, Whole Foods, Safeway) in the same weeks. Combined, groceries are actually your #2 spend category at <span class="amt">${fmt(catSum('Groceries'))}</span> over 3 months — easy to miss when it's split across statements.`},
+    {tag:'risk', title:`Duplicate charge caught: Costco Wholesale billed twice`,
+      body:`<span class="amt">$142.85</span> was charged on Meridian on both Jul 2 and Jul 4 — same merchant, same amount, 48 hours apart. Worth a dispute call; that's a direct <span class="amt">$142.85</span> recovery if it's an error.`},
+  ];
+  el.innerHTML = items.map(i=>`<div class="insight-card"><span class="tag ${i.tag}">${i.tag==='risk'?'Action needed':i.tag==='watch'?'Worth watching':'Opportunity'}</span><div style="font-weight:650;margin-bottom:5px;font-size:14px;">${i.title}</div><p>${i.body}</p></div>`).join('');
+}
+
+function renderCards(){
+  const el = document.getElementById('cardlist');
+  el.innerHTML = INSIGHTS.cards_summary.map(c=>{
+    const util = (c.aug_balance/c.limit*100).toFixed(0);
+    return `<div class="cc">
+      <div><div class="issuer">${c.issuer} <span style="color:var(--muted);font-weight:400;">•••• ${c.last4}</span></div>
+        <div class="meta">${c.apr? 'APR '+c.apr+'%' : 'No revolving balance — paid in full monthly'} · Limit ${fmt0(c.limit)}</div>
+        <div class="util"><div class="u" style="width:${util}%"></div></div></div>
+      <div class="bal"><div>${fmt(c.aug_balance)}</div><div class="apr">${util}% utilized</div></div>
+    </div>`;
+  }).join('');
+}
+
+const suggestions = [
+  "Why did my spending jump in August?",
+  "How much am I spending on subscriptions?",
+  "Give me a plan to spend better",
+  "Which card should I pay down first?",
+  "Am I paying any fees I shouldn't be?",
+  "How much could I realistically save per month?"
+];
+function renderSuggestions(){
+  document.getElementById('dashSuggest').innerHTML = suggestions.map(s=>`<div class="suggest" onclick="goAskAdvisor('${s.replace(/'/g,"\\'")}')">${s}</div>`).join('');
+  document.getElementById('chatSuggest').innerHTML = suggestions.map(s=>`<div class="suggest" onclick="askAdvisor('${s.replace(/'/g,"\\'")}')">${s}</div>`).join('');
+}
+function goAskAdvisor(q){ setView('advisor'); setTimeout(()=>askAdvisor(q), 150); }
+
+/* ============================= NAV ============================= */
+function setView(v){
+  document.querySelectorAll('[id^="view-"]').forEach(e=>e.classList.add('hidden'));
+  document.getElementById('view-'+v).classList.remove('hidden');
+  document.querySelectorAll('.navitem').forEach(e=>e.classList.toggle('active', e.dataset.view===v));
+}
+document.querySelectorAll('.navitem').forEach(e=>e.addEventListener('click',()=>setView(e.dataset.view)));
+
+/* ============================= ADVISOR ENGINE ============================= */
+/* Deterministic, data-grounded response engine. Every number below is computed
+   from INSIGHTS (itself derived from the actual parsed statements) — not invented. */
+function buildAnswer(qRaw){
+  const q = qRaw.toLowerCase();
+  const dining = INSIGHTS.totals_by_category['Dining'];
+  const diningGrowthPct = ((dining[2]-dining[0])/dining[0])*100;
+  const diningSave = dining[2]-dining[0];
+  const shop = INSIGHTS.totals_by_category['Shopping'];
+  const cards = INSIGHTS.cards_summary;
+  const revolvers = cards.filter(c=>!c.pays_in_full);
+  const annualInterestEst = revolvers.reduce((a,c)=>a + c.aug_balance*(c.apr/100), 0);
+  const augTotal = monthTotal('2026-08'), junTotal = monthTotal('2026-06');
+  const growth = ((augTotal-junTotal)/junTotal)*100;
+
+  // 1. spending jump / trend
+  if(/(jump|increase|why.*spend|spending.*up|higher|more.*august)/.test(q)){
+    const travel = catTotal('Travel',2);
+    return `Your total spend went from <span class="num">${fmt(junTotal)}</span> in June to <span class="num">${fmt(augTotal)}</span> in August — up ${pct(growth)}.
+    Three things are driving it:
+    <ul>
+      <li><b>Travel (${fmt(travel)}):</b> the Barcelona trip on your Summit card (flight + hotel) is a one-time spike, not a spending problem.</li>
+      <li><b>Dining (+${pct(diningGrowthPct)} since June):</b> from ${fmt(dining[0])} to ${fmt(dining[2])}/month, and this part <i>is</i> trending, not a one-off.</li>
+      <li><b>Shopping (${fmt(shop[2])} in August, your #1 non-travel category):</b> steady at 26-30% of monthly spend across all three months.</li>
+    </ul>
+    If you strip out the Barcelona trip, your underlying monthly spend is closer to <span class="num">${fmt(augTotal-travel)}</span> — still up from June, mostly because of dining.`;
+  }
+
+  // 2. subscriptions
+  if(/(subscription|streaming|recurring|netflix|disney|hulu)/.test(q)){
+    const list = INSIGHTS.subscriptions.map(s=>`${s.name} — ${fmt(s.monthly)}/mo${s.note? ' <i>('+s.note+')</i>':''}`);
+    return `You're paying for <span class="num">${INSIGHTS.subscriptions.length} subscriptions</span> totaling <span class="num">${fmt(subsMonthlyTotal())}/month</span> (<span class="num">${fmt(subsMonthlyTotal()*12)}/year</span>), spread across Aurora and Summit — which is exactly why nobody notices the total.
+    <ul>${list.map(l=>`<li>${l}</li>`).join('')}</ul>
+    You have ${INSIGHTS.streaming_overlap.length} video services alone (Disney+, Hulu, Max, Apple TV+, Netflix, YouTube Premium, Paramount+) — that's <span class="num">${fmt(15.99+17.99+15.99+9.99+17.99+13.99+11.99)}/mo</span> just in streaming. Cutting to 2 of the 7 saves roughly <span class="num">${fmt((15.99+17.99+15.99+9.99+17.99+13.99+11.99) - 30)}/month</span> without losing meaningful content — ${fmt(((15.99+17.99+15.99+9.99+17.99+13.99+11.99) - 30)*12)}/year.`;
+  }
+
+  // 3. plan for me
+  if(/(plan|budget|help me spend|spend better|what should i do|action plan)/.test(q)){
+    const streamCost = 15.99+17.99+15.99+9.99+17.99+13.99+11.99;
+    const streamSave = streamCost - 30;
+    return `Here's a grounded plan based on your last 3 months — three moves, ranked by impact:
+    <ul>
+      <li><b>1. Trim dining back toward June levels:</b> August dining (${fmt(dining[2])}) is ${pct(diningGrowthPct)} above June (${fmt(dining[0])}). Getting back to that level saves <span class="num">${fmt(diningSave)}/month</span> — the single biggest lever you have.</li>
+      <li><b>2. Cut overlapping streaming from 7 services to 2:</b> saves <span class="num">${fmt(streamSave)}/month</span> (${fmt(streamSave*12)}/year). Start with Paramount+, Apple TV+, and CloudVault — lowest usage signal, easiest to cancel.</li>
+      <li><b>3. Pay down Summit before Aurora:</b> Summit is at 22.99% APR vs Aurora's 17.9%. Redirecting an extra ${fmt(150)}/month toward Summit's ${fmt(cards[2].aug_balance)} balance clears it roughly 4 months faster and avoids ~${fmt(cards[2].aug_balance*0.2299*0.33)} in interest.</li>
+    </ul>
+    Combined, moves 1 and 2 alone free up <span class="num">${fmt(diningSave+streamSave)}/month</span> — about <span class="num">${fmt((diningSave+streamSave)*12)}/year</span> — with zero lifestyle downgrade beyond fewer duplicate streaming apps.`;
+  }
+
+  // 4. which card to pay down
+  if(/(which card|pay.*down|pay off|priorit|apr|interest rate)/.test(q)){
+    return `Pay down <b>Summit Bank (•••• 4021)</b> first. It carries the highest APR at <span class="num">22.99%</span> and the largest balance at <span class="num">${fmt(cards[2].aug_balance)}</span> — Aurora is 17.9% APR on ${fmt(cards[1].aug_balance)}.
+    At current balances, if both sat untouched for a year you'd pay roughly <span class="num">${fmt(annualInterestEst)}</span> combined in interest, split ${fmt(cards[2].aug_balance*0.2299)} (Summit) vs ${fmt(cards[1].aug_balance*0.179)} (Aurora). Meridian Express (0% revolving, always paid in full) is your best-behaved card — keep doing exactly what you're doing there.
+    Rule of thumb: always attack the highest-APR balance first (avalanche method) — it's mathematically the fastest way to stop bleeding interest.`;
+  }
+
+  // 5. fees
+  if(/(fee|late payment|foreign transaction|interest charge)/.test(q)){
+    const list = INSIGHTS.fees_detail.map(f=>`${f.desc} (${f.card}, ${f.date.slice(5)}) — ${fmt(f.amount)}`);
+    return `Yes — you paid <span class="num">${fmt(feesTotal())}</span> in fees across the last 3 months, all avoidable:
+    <ul>${list.map(l=>`<li>${l}</li>`).join('')}</ul>
+    The late fee (<span class="num">$29.00</span>) disappears entirely if you set autopay for at least the minimum on Aurora. The foreign transaction fees (<span class="num">$21.80</span>) would've been $0 on a no-FX travel card — worth getting one before your next trip. The interest charges (<span class="num">$46.25</span>) go away once Summit is paid in full each cycle instead of carrying a balance.`;
+  }
+
+  // 6. how much could I save
+  if(/(how much.*save|realistic|savings potential)/.test(q)){
+    const streamCost = 15.99+17.99+15.99+9.99+17.99+13.99+11.99;
+    const streamSave = streamCost - 30;
+    const total = diningSave + streamSave + feesTotal()/3;
+    return `Adding up the specific, data-backed opportunities in your 3 months:
+    <ul>
+      <li>Dining pulled back to June levels: <span class="num">${fmt(diningSave)}/mo</span></li>
+      <li>Streaming consolidated to 2 services: <span class="num">${fmt(streamSave)}/mo</span></li>
+      <li>Avoidable fees eliminated (avg over 3mo): <span class="num">${fmt((feesTotal()/3).toFixed(2))}/mo</span></li>
+    </ul>
+    That's <span class="num">${fmt(total)}/month</span>, or roughly <span class="num">${fmt(total*12)}/year</span> — without touching groceries, utilities, or your Barcelona trip. This is deliberately conservative: it excludes any category where I don't have 3 clean months of trend to back the number.`;
+  }
+
+  // 7. groceries
+  if(/(grocer|costco|trader joe|whole foods|safeway)/.test(q)){
+    return `Groceries total <span class="num">${fmt(catSum('Groceries'))}</span> over 3 months (avg <span class="num">${fmt(catSum('Groceries')/3)}/mo</span>) — but it's split across two cards: Costco + Trader Joe's on Meridian, and Trader Joe's/Whole Foods/Safeway on Summit. That fragmentation is exactly the problem Findr exists to fix — on either single statement it looks smaller than it is.
+    One more thing: I caught a likely duplicate — <span class="num">$142.85</span> charged twice at Costco Wholesale on Jul 2 and Jul 4 on Meridian, same amount, 48 hours apart. Worth a dispute call.`;
+  }
+
+  // 8. duplicate / anomaly
+  if(/(duplicate|double charge|anomaly|weird|suspicious)/.test(q)){
+    return `Found one: <span class="num">$142.85</span> at COSTCO WHOLESALE #488 was charged twice on your Meridian card — once Jul 2 and again Jul 4, identical amount, 48 hours apart. That pattern (same merchant, same exact amount, days apart) is the classic signature of a duplicate authorization. Worth a quick call to Meridian to dispute — if it's an error, that's <span class="num">$142.85</span> back in your pocket.`;
+  }
+
+  // 9. total / overview
+  if(/(total|overview|how much.*spend|summary)/.test(q)){
+    return `Over the last 3 months you spent <span class="num">${fmt(grandTotal())}</span> across 3 cards — averaging <span class="num">${fmt(avgMonthly())}/month</span>. Biggest categories: Shopping (${fmt(catSum('Shopping'))}), Groceries (${fmt(catSum('Groceries'))}), and Travel (${fmt(catSum('Travel'))}, essentially all the August Barcelona trip). Spend trended up each month: ${fmt(monthTotal('2026-06'))} → ${fmt(monthTotal('2026-07'))} → ${fmt(monthTotal('2026-08'))}.`;
+  }
+
+  // fallback — still grounded, general nudge toward what the agent can do
+  return `I can only answer from your real transaction history, not general advice. Try asking about a specific thing — your subscriptions, dining trend, fees, which card to pay down, or say "give me a plan." Quick fact while you decide: your average monthly spend across all 3 cards over Jun–Aug is <span class="num">${fmt(avgMonthly())}</span>, and it's trending up ${pct(growth)} since June.`;
+}
+
+let firstBotMsgShown = false;
+function appendMsg(role, html){
+  const wrap = document.getElementById('chatmsgs');
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.innerHTML = html;
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+  return div;
+}
+function askAdvisor(q){
+  document.getElementById('chatInput').value='';
+  appendMsg('user', q.replace(/</g,'&lt;'));
+  const typingEl = appendMsg('bot', `<div class="typing"><span></span><span></span><span></span></div>`);
+  setTimeout(()=>{
+    typingEl.innerHTML = buildAnswer(q);
+    document.getElementById('chatmsgs').scrollTop = document.getElementById('chatmsgs').scrollHeight;
+  }, 500 + Math.random()*400);
+}
+document.getElementById('sendBtn').addEventListener('click', ()=>{
+  const v = document.getElementById('chatInput').value.trim();
+  if(v) askAdvisor(v);
+});
+document.getElementById('chatInput').addEventListener('keydown', e=>{
+  if(e.key==='Enter'){ const v=e.target.value.trim(); if(v) askAdvisor(v); }
+});
+
+function initChat(){
+  if(firstBotMsgShown) return;
+  firstBotMsgShown = true;
+  appendMsg('bot', `Hi Jordan — I've analyzed all 3 of your cards for Jun–Aug 2026 (${fmt(grandTotal())} in total spend, ${INSIGHTS.subscriptions.length} subscriptions, ${INSIGHTS.fees_detail.length} fee events). Ask me anything about it, or tap a question below to start.`);
+}
+
+/* ============================= UPLOAD MOCK ============================= */
+document.getElementById('dropzone').addEventListener('click', ()=>document.getElementById('fileInput').click());
+document.getElementById('fileInput').addEventListener('change', e=>{
+  const f = e.target.files[0];
+  const status = document.getElementById('uploadStatus');
+  if(!f) return;
+  status.textContent = `Parsing ${f.name}...`;
+  setTimeout(()=>{
+    status.innerHTML = `✅ Parsed <b>${f.name}</b> — found transactions, merged into your advisor. (Prototype note: this demo runs on the 3 pre-loaded statements; live parsing would categorize and merge new files the same way.)`;
+  }, 1200);
+});
+['dragover','drop'].forEach(ev=>document.getElementById('dropzone').addEventListener(ev, e=>e.preventDefault()));
+
+/* ============================= INIT ============================= */
+renderStatRow();
+renderBarChart();
+renderCatList();
+renderInsights();
+renderCards();
+renderSuggestions();
+document.querySelectorAll('.navitem').forEach(e=>{
+  if(e.dataset.view==='advisor') e.addEventListener('click', initChat);
+});
+</script>

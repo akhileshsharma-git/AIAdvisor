@@ -1,0 +1,49 @@
+{
+  "totals_by_month": {"2026-06": 1759.26, "2026-07": 1911.85, "2026-08": 2952.51},
+  "totals_by_category": {
+    "Dining":          [124.05, 169.80, 252.20],
+    "Entertainment":   [32.00, 28.50, 0.00],
+    "Fees":            [0.00, 50.40, 46.65],
+    "Groceries":       [464.09, 535.57, 342.58],
+    "Health":          [45.35, 42.30, 46.00],
+    "Shopping":        [523.05, 505.67, 588.45],
+    "Subscriptions":   [174.33, 186.32, 190.82],
+    "Transport":       [222.20, 221.45, 204.50],
+    "Travel":          [0.00, 0.00, 1099.02],
+    "Utilities":       [174.19, 171.84, 182.29]
+  },
+  "months": ["2026-06", "2026-07", "2026-08"],
+  "fees_detail": [
+    {"card": "Aurora Credit Union", "date": "2026-07-14", "desc": "Late Payment Fee", "amount": 29.00},
+    {"card": "Summit Bank", "date": "2026-07-30", "desc": "Interest Charge", "amount": 21.40},
+    {"card": "Summit Bank", "date": "2026-08-11", "desc": "Foreign Transaction Fee", "amount": 20.65},
+    {"card": "Summit Bank", "date": "2026-08-13", "desc": "Foreign Transaction Fee", "amount": 1.15},
+    {"card": "Summit Bank", "date": "2026-08-30", "desc": "Interest Charge", "amount": 24.85}
+  ],
+  "subscriptions": [
+    {"name": "Amazon Prime", "monthly": 14.99, "card": "Aurora"},
+    {"name": "Disney+", "monthly": 15.99, "card": "Aurora"},
+    {"name": "Hulu", "monthly": 17.99, "card": "Aurora"},
+    {"name": "Max (HBO)", "monthly": 15.99, "card": "Aurora"},
+    {"name": "CloudVault Pro Storage", "monthly": 11.99, "card": "Aurora"},
+    {"name": "ZenMind Meditation", "monthly": 12.99, "card": "Aurora"},
+    {"name": "Apple TV+", "monthly": 9.99, "card": "Aurora"},
+    {"name": "YouTube Premium", "monthly": 13.99, "card": "Aurora"},
+    {"name": "Apple Music", "monthly": 10.99, "card": "Aurora"},
+    {"name": "Audible", "monthly": 14.95, "card": "Aurora"},
+    {"name": "Paramount+", "monthly": 11.99, "card": "Aurora", "note": "free trial in June, converted to paid in July - easy to miss"},
+    {"name": "Microsoft 365", "monthly": 9.99, "card": "Aurora"},
+    {"name": "Netflix", "monthly": 15.49, "card": "Summit", "note": "price rose from $15.49 to $17.99 in August"},
+    {"name": "Spotify", "monthly": 10.99, "card": "Summit"}
+  ],
+  "streaming_overlap": ["Disney+", "Hulu", "Max (HBO)", "Apple TV+", "Netflix", "YouTube Premium", "Paramount+"],
+  "cards_summary": [
+    {"issuer": "Meridian Express", "last4": "8837", "apr": null, "pays_in_full": true, "aug_balance": 450.81, "limit": 8000},
+    {"issuer": "Aurora Credit Union", "last4": "6014", "apr": 17.90, "pays_in_full": false, "aug_balance": 783.43, "limit": 5000},
+    {"issuer": "Summit Bank", "last4": "4021", "apr": 22.99, "pays_in_full": false, "aug_balance": 1786.03, "limit": 15000}
+  ],
+  "anomalies": [
+    {"type": "duplicate_charge", "desc": "COSTCO WHOLESALE #488 charged $142.85 twice within 48 hours (Jul 2 and Jul 4) on Meridian card", "amount": 142.85},
+    {"type": "grocery_double_dip", "desc": "Groceries purchased on both Meridian (Costco/Trader Joe's) and Summit (Trader Joe's/Whole Foods/Safeway) in the same weeks - spend is fragmented across 2 cards, making it hard to see the real total"}
+  ]
+}
